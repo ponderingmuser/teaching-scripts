@@ -1,0 +1,97 @@
+#!/usr/bin/python3
+
+
+
+import os
+
+import threading
+
+import time
+
+
+
+# Path to the target file
+
+FILE_PATH = "target.txt"
+
+
+
+def delete_file():
+
+    """Function to delete the target file after a short delay."""
+
+    time.sleep(0.1)  # Adding a slight delay before deletion
+
+    if os.path.exists(FILE_PATH):
+
+        os.remove(FILE_PATH)
+
+
+
+def check_and_read_file():
+
+    """Function to check and then read the target file."""
+
+    if os.path.exists(FILE_PATH):
+
+        # Introducing a small sleep to increase the likelihood of a TOC/TOU condition
+
+        time.sleep(0.1)
+
+        try:
+
+            with open(FILE_PATH, "r") as f:
+
+                message = f.read()
+
+                print(f"Success! Read from file: '{message}'")
+
+        except FileNotFoundError:
+
+            print("TOC/TOU vulnerability triggered! File was deleted between check and use.")
+
+
+
+def run_experiment():
+
+    # Message to be written in the file
+
+    file_message = "This is the content of the target file."
+
+    
+
+    # Create the target file with the message
+
+    with open(FILE_PATH, "w") as f:
+
+        f.write(file_message)
+
+
+
+    # Start a thread to delete the file
+
+    t = threading.Thread(target=delete_file)
+
+    t.start()
+
+
+
+    # Try to check and read the file
+
+    check_and_read_file()
+
+
+
+    # Wait for the delete thread to finish
+
+    t.join()
+
+
+
+# Run the experiment 10 times
+
+for _ in range(10):
+
+    run_experiment()
+
+
