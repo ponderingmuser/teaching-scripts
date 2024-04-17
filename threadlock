@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+
+import multiprocessing
+
+def increment_counter(counter, lock):
+    for _ in range(1000000):
+        with lock:
+            counter.value += 1
+
+def run_experiment():
+    counter = multiprocessing.Value('i', 0)  # Shared between processes
+    lock = multiprocessing.Lock()  # Lock for synchronizing access to the counter
+
+    # Create two processes
+    processes = [multiprocessing.Process(target=increment_counter, args=(counter, lock)) for _ in range(2)]
+
+    # Start all processes
+    for p in processes:
+        p.start()
+
+    # Wait for all processes to finish executing
+    for p in processes:
+        p.join()
+
+    print(counter.value)
+
+# Run the experiment 10 times
+for _ in range(10):
+    run_experiment()
